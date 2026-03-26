@@ -8,11 +8,13 @@ Flask-Login==0.6.3
 Flask-Mail==0.10.0
 Flask-SocketIO==5.3.6
 greenlet==3.2.4
+gunicorn==23.0.0
 h11==0.16.0
 importlib_metadata==8.7.1
 itsdangerous==2.2.0
 Jinja2==3.1.6
 MarkupSafe==3.0.3
+packaging==26.0
 python-dotenv==1.2.1
 python-engineio==4.9.1
 python-socketio==5.11.2
@@ -20,35 +22,3 @@ simple-websocket==1.1.0
 Werkzeug==3.0.3
 wsproto==1.2.0
 zipp==3.23.0
-
-# create virtual environment
-
-# mac --> python3 -m venv myenv
-
-# activate  virtual environment
-
-#  mac --> source myenv/bin/activate
-
-#install requirements.txt
-
-#  mac ---> pip install -r requirements.txt
-
-# if shown warining  
-# ---> python3 -m pip install --upgrade pip
-
-# check pip install yet or not ?
-
-# pip list
-
-#to appear all installed package in requirements.txt
-
-#pip freeze > requirements.txt
-
-
-#pw could not inserte directly 
-
-# from werkzeug.security import generate_password_hash
-#print(generate_password_hash("12345", method="pbkdf2:sha256"))
-
-#get all the tables as schema for
-#sqlite3 database.db .schema > schema.sql
