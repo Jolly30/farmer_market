@@ -3,15 +3,15 @@
     cd farmer_market
 
 2. Create a Python virtual environment(vscode terminal)
-   # Mac/Linux
+    Mac/Linux
     python3 -m venv myenv
-    # Windows
+    Windows
     python -m venv myenv
 
 3. Activate the virtual environment
-   # Mac/Linux
+    Mac/Linux
     source myenv/bin/activate
-   # Windows
+    Windows
     myenv\Scripts\activate
 
 5. Install required packages
@@ -21,7 +21,7 @@
    python -m pip install --upgrade pip
 
 6. Run the application
-   # Windows
+   Windows
    python app.py
-   # Mac/Linux
+   Mac/Linux
    python3 app.py
