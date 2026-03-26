@@ -1,0 +1,301 @@
+{# templates/chat/my_chats.html #}
+{% extends "base.html" %}
+{% block content %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+<style>
+  /* use theme tokens from base.html */
+  .muted { color: var(--text-muted); }
+
+  .page-head{
+    border:1px solid var(--border-soft);
+    border-radius:18px;
+    background: linear-gradient(135deg, rgba(13,110,253,.14), rgba(13,110,253,.06));
+    box-shadow: var(--shadow-soft);
+    padding:14px 16px;
+    margin-bottom:14px;
+  }
+  .page-head .title{
+    font-weight:900;
+    margin:0;
+    color: var(--text-main);
+    letter-spacing:.2px;
+  }
+  .mode-pill{
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    padding:8px 12px;
+    border-radius:999px;
+    border:1px solid var(--border-soft);
+    background: var(--bg-surface);
+    color: var(--text-main);
+    font-weight:800;
+    font-size:.86rem;
+    white-space:nowrap;
+  }
+
+  .card-soft{
+    border:1px solid var(--border-soft);
+    border-radius:18px;
+    background: var(--bg-surface);
+    box-shadow: var(--shadow-soft);
+  }
+
+  /* clickable row */
+  .chat-link{
+    text-decoration:none;
+    color:inherit;
+    display:block;
+  }
+
+  .chat-row{
+    border:1px solid var(--border-soft);
+    border-radius:16px;
+    padding:14px 14px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:14px;
+    background: var(--bg-surface);
+    transition:.14s ease;
+  }
+  .chat-row:hover{
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-soft);
+    background: var(--hover-bg);
+  }
+
+  .row-left{ min-width:0; flex:1; }
+
+  .row-title{
+    font-weight:900;
+    margin:0;
+    font-size:1rem;
+    display:flex;
+    align-items:center;
+    gap:10px;
+    flex-wrap:wrap;
+    color: var(--text-main);
+  }
+
+  .chat-id{
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    padding:6px 10px;
+    border-radius:999px;
+    border:1px solid var(--border-soft);
+    background: var(--bg-soft);
+    font-weight:900;
+    font-size:.82rem;
+  }
+
+  .sub{
+    margin-top:6px;
+    font-size:.92rem;
+    color: var(--text-muted);
+    line-height:1.35;
+  }
+
+  .pill{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    padding:6px 10px;
+    border-radius:999px;
+    font-size:.82rem;
+    border:1px solid var(--border-soft);
+    background: var(--bg-soft);
+    color: var(--text-main);
+    white-space:nowrap;
+    font-weight:800;
+  }
+
+  .pill.unread{
+    background: rgba(13,110,253,.14);
+    border-color: rgba(13,110,253,.35);
+  }
+  .pill.new{
+    background: rgba(255,193,7,.14);
+    border-color: rgba(255,193,7,.35);
+  }
+  .pill.done{
+    background: rgba(25,135,84,.14);
+    border-color: rgba(25,135,84,.30);
+  }
+
+  .btn-open{
+    border-radius:12px;
+    padding:10px 14px;
+    font-weight:900;
+    white-space:nowrap;
+  }
+
+  .avatar{
+    width:28px;height:28px;border-radius:50%;
+    overflow:hidden;
+    background: var(--bg-soft);
+    border:1px solid var(--border-soft);
+    display:flex;align-items:center;justify-content:center;
+    flex:0 0 auto;
+    color: var(--text-muted);
+  }
+  .avatar img{ width:100%;height:100%;object-fit:cover;display:block; }
+
+  .who{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    flex-wrap:wrap;
+  }
+
+  .last-line{
+    margin-top:6px;
+    padding:10px 12px;
+    border-radius:14px;
+    border:1px solid var(--border-soft);
+    background: var(--bg-soft);
+    color: var(--text-main);
+  }
+  .last-line .label{
+    font-size:.78rem;
+    font-weight:900;
+    color: var(--text-muted);
+    margin-bottom:4px;
+  }
+
+  .right-side{
+    display:flex;
+    align-items:center;
+    gap:10px;
+  }
+  .pills-stack{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    flex-wrap:wrap;
+    justify-content:flex-end;
+  }
+
+  @media (max-width: 768px){
+    .chat-row{ flex-direction:column; align-items:stretch; }
+    .right-side{ justify-content:space-between; }
+    .btn-open{ width:100%; }
+  }
+</style>
+
+<div class="container mt-4">
+
+  <div class="page-head d-flex align-items-start justify-content-between gap-2 flex-wrap">
+    <div>
+      <h3 class="title">My Chats</h3>
+      <div class="muted small">Chats appear after a request is accepted.</div>
+    </div>
+
+    <div class="mode-pill">
+      <i class="bi {% if mode == 'seller' %}bi-shop{% else %}bi-bag{% endif %}"></i>
+      {% if mode == 'seller' %}
+        Seller mode
+      {% else %}
+        Buyer mode
+      {% endif %}
+    </div>
+  </div>
+
+  {% if chats|length == 0 %}
+    <div class="alert alert-info">
+      No chats yet. Chats appear only after seller accepts request.
+    </div>
+  {% else %}
+    <div class="card card-soft">
+      <div class="card-body">
+
+        <div class="d-grid gap-2">
+          {% for c in chats %}
+
+            {# ✅ whole row clickable #}
+            <a class="chat-link" href="{{ url_for('chat.chat_room', req_id=c.request_id) }}">
+              <div class="chat-row">
+
+                <div class="row-left">
+                  <div class="row-title">
+                    <span class="chat-id">
+                      <i class="bi bi-hash"></i> chat-{{ c.request_id }}
+                    </span>
+
+                    <span class="text-truncate" style="max-width:520px;">
+                      {{ c.product_title }}
+                    </span>
+                  </div>
+
+                  <div class="sub">
+                    <div class="who">
+                      <span class="avatar" title="Buyer">
+                        {% if c.buyer_photo %}
+                          <img src="{{ url_for('static', filename=c.buyer_photo) }}" alt="buyer">
+                        {% else %}
+                          <i class="bi bi-person-fill" style="font-size:14px;"></i>
+                        {% endif %}
+                      </span>
+                      <span>Buyer: <b>{{ c.buyer_name }}</b></span>
+
+                      <span class="text-muted">•</span>
+
+                      <span class="avatar" title="Seller">
+                        {% if c.seller_photo %}
+                          <img src="{{ url_for('static', filename=c.seller_photo) }}" alt="seller">
+                        {% else %}
+                          <i class="bi bi-shop" style="font-size:14px;"></i>
+                        {% endif %}
+                      </span>
+                      <span>Seller: <b>{{ c.seller_name }}</b></span>
+                    </div>
+
+                    {% if c.last_message %}
+                      <div class="last-line">
+                        <div class="label"><i class="bi bi-chat-left-text me-1"></i> Last message</div>
+                        <div class="small">{{ c.last_message }}</div>
+                      </div>
+                    {% endif %}
+                  </div>
+                </div>
+
+                <div class="right-side">
+                  <div class="pills-stack">
+
+                    {# ✅ unread count / NEW / Completed (same logic) #}
+                    {% if c.unread_count > 0 %}
+                      <span class="pill unread">
+                        <i class="bi bi-chat-dots-fill"></i>
+                        {{ c.unread_count }}
+                      </span>
+                    {% elif c.is_new_chat %}
+                      <span class="pill new"><i class="bi bi-stars"></i> NEW</span>
+                    {% endif %}
+
+                    {% if c.is_completed %}
+                      <span class="pill done"><i class="bi bi-check2-circle"></i> Completed</span>
+                    {% endif %}
+                  </div>
+
+                  {# ✅ keep Open button (stop row-click when pressing it) #}
+                  <a class="btn btn-primary btn-open"
+                     href="{{ url_for('chat.chat_room', req_id=c.request_id) }}"
+                     onclick="event.stopPropagation();">
+                    <i class="bi bi-box-arrow-in-right"></i> Open
+                  </a>
+                </div>
+
+              </div>
+            </a>
+
+          {% endfor %}
+        </div>
+
+      </div>
+    </div>
+  {% endif %}
+
+</div>
+{% endblock %}

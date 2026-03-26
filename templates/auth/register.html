@@ -1,0 +1,135 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="container mt-4" style="max-width:520px;">
+  <h3 class="mb-3">Register</h3>
+
+  <form id="regForm" method="POST" action="{{ url_for('auth.register_submit') }}">
+
+    <!-- Username -->
+    <div class="mb-3">
+      <label class="form-label">Username</label>
+      <input class="form-control" name="username" id="username" required>
+    </div>
+
+    <!-- Email -->
+    <div class="mb-3">
+      <label class="form-label">Email</label>
+      <input class="form-control" name="email" id="email" type="email" required>
+    </div>
+
+    <!-- Password -->
+    <div class="mb-3">
+      <label class="form-label">Password</label>
+      <input class="form-control" name="password" id="password" type="password" required>
+    </div>
+
+    <!-- OTP Section -->
+    <div class="mb-2">
+      <label class="form-label">OTP</label>
+
+      <div class="d-flex gap-2">
+        <input class="form-control"
+               name="otp"
+               id="otp"
+               placeholder="Enter OTP"
+               required>
+
+        <!-- ✅ Blue filled button -->
+        <button type="button"
+                id="sendOtpBtn"
+                class="btn btn-primary fw-semibold"
+                style="white-space:nowrap; border-radius:10px;">
+          Send OTP
+        </button>
+      </div>
+
+      <div class="small mt-2" id="otpStatus" style="display:none;"></div>
+    </div>
+
+    <!-- Register -->
+    <button type="submit" class="btn btn-primary w-100 mt-3">
+      Register
+    </button>
+
+    <!-- Cancel -->
+    <button type="button"
+            id="cancelBtn"
+            class="btn btn-outline-danger w-100 mt-2">
+      Cancel Registration
+    </button>
+
+  </form>
+
+  <div class="mt-3 text-center">
+    <a href="{{ url_for('auth.login') }}">
+      Already have an account? Login
+    </a>
+  </div>
+</div>
+
+<style>
+  /* Optional: smoother disabled look */
+  #sendOtpBtn:disabled {
+    opacity: 0.85;
+    cursor: not-allowed;
+  }
+</style>
+
+<script>
+  const sendBtn = document.getElementById("sendOtpBtn");
+  const statusEl = document.getElementById("otpStatus");
+  const cancelBtn = document.getElementById("cancelBtn");
+  const form = document.getElementById("regForm");
+
+  function showStatus(text, type) {
+    statusEl.style.display = "block";
+    statusEl.className = "small mt-2 text-" + type;
+    statusEl.innerHTML = text;
+  }
+
+  sendBtn.addEventListener("click", async () => {
+
+    sendBtn.disabled = true;
+
+    const fd = new FormData();
+    fd.append("username", document.getElementById("username").value);
+    fd.append("email", document.getElementById("email").value);
+    fd.append("password", document.getElementById("password").value);
+
+    try {
+      const res = await fetch("{{ url_for('auth.register_send_otp') }}", {
+        method: "POST",
+        body: fd
+      });
+
+      const data = await res.json();
+
+      if (data.ok) {
+        showStatus(data.message + " (Check inbox/spam)", "success");
+
+        // Change text but keep blue style
+        sendBtn.textContent = "Resend OTP";
+      } else {
+        showStatus(data.message || "Failed to send OTP.", "danger");
+      }
+    } catch (e) {
+      showStatus("Network error. Try again.", "danger");
+    } finally {
+      sendBtn.disabled = false;
+    }
+  });
+
+  cancelBtn.addEventListener("click", async () => {
+
+    try {
+      await fetch("{{ url_for('auth.register_cancel') }}", { method: "POST" });
+    } catch (e) {}
+
+    form.reset();
+    sendBtn.textContent = "Send OTP";
+    statusEl.style.display = "none";
+  });
+</script>
+
+{% endblock %}

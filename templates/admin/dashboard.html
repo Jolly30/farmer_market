@@ -1,0 +1,433 @@
+{% extends "base.html" %}
+{% block content %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+<style>
+  /* ✅ IMPORTANT: don't force body background (breaks dark mode) */
+  /* body { background: #f6f8fb; } */
+
+  :root{
+    --soft-surface: rgba(var(--bs-body-color-rgb), .03);
+    --soft-border: rgba(var(--bs-body-color-rgb), .12);
+    --soft-shadow: 0 .5rem 1.25rem rgba(16,24,40,.10);
+    --soft-shadow-hover: 0 1rem 2rem rgba(16,24,40,.16);
+  }
+
+  .kpi-wrap { height: 100%; }
+
+  .kpi {
+    border: 1px solid var(--soft-border);
+    border-radius: 16px;
+    background: var(--bs-body-bg);
+    box-shadow: var(--soft-shadow);
+    transition: transform .12s ease, box-shadow .12s ease;
+    height: 100%;
+    min-height: 118px;
+  }
+  .kpi:hover { transform: translateY(-3px); box-shadow: var(--soft-shadow-hover); }
+
+  .kpi-label { font-size: .85rem; color: rgba(var(--bs-body-color-rgb), .65); }
+  .kpi-value { font-size: 2rem; font-weight: 800; line-height: 1.1; color: var(--bs-body-color); }
+
+  .kpi-accent { border-left: 6px solid transparent; }
+  .accent-blue   { border-left-color: #0d6efd; }
+  .accent-green  { border-left-color: #198754; }
+  .accent-yellow { border-left-color: #ffc107; }
+  .accent-cyan   { border-left-color: #0dcaf0; }
+  .accent-purple { border-left-color: #6f42c1; }
+  .accent-dark   { border-left-color: #212529; }
+
+  .kpi-icon {
+    width: 44px; height: 44px; border-radius: 14px;
+    display: grid; place-items: center;
+    font-size: 1.35rem;
+    border: 1px solid rgba(var(--bs-body-color-rgb), .10);
+    background: var(--soft-surface);
+    color: var(--bs-body-color);
+  }
+
+  /* keep your color vibe but still ok in dark */
+  .icon-blue   { background: rgba(13,110,253,.12); color: #0d6efd; border-color: rgba(13,110,253,.18); }
+  .icon-green  { background: rgba(25,135,84,.14);  color: #198754; border-color: rgba(25,135,84,.20); }
+  .icon-yellow { background: rgba(255,193,7,.18);  color: #b58100; border-color: rgba(255,193,7,.22); }
+  .icon-cyan   { background: rgba(13,202,240,.14); color: #0dcaf0; border-color: rgba(13,202,240,.20); }
+  .icon-purple { background: rgba(111,66,193,.14); color: #6f42c1; border-color: rgba(111,66,193,.20); }
+  .icon-dark   { background: rgba(33,37,41,.10);   color: var(--bs-body-color); border-color: rgba(var(--bs-body-color-rgb), .18); }
+
+  a.kpi-link { text-decoration: none; color: inherit; display:block; height:100%; }
+
+  .soft-card {
+    border: 1px solid var(--soft-border);
+    border-radius: 16px;
+    background: var(--bs-body-bg);
+    box-shadow: var(--soft-shadow);
+    overflow: hidden;
+  }
+  .section-head {
+    border-bottom: 1px solid var(--soft-border);
+    background: rgba(var(--bs-body-color-rgb), .02);
+  }
+
+  /* badge should not be forced light */
+  .badge-soft{
+    background: rgba(var(--bs-body-color-rgb), .08) !important;
+    color: var(--bs-body-color) !important;
+    border: 1px solid rgba(var(--bs-body-color-rgb), .12);
+  }
+</style>
+
+<div class="container mt-4">
+
+  <div class="mb-3">
+    <h3 class="m-0">Admin Dashboard</h3>
+  </div>
+
+  <!-- KPI Cards -->
+  <div class="row g-3 mb-4">
+
+    <!-- Approved Sellers -->
+    <div class="col-md-4 kpi-wrap">
+      <div class="kpi kpi-accent accent-green p-3">
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <div class="kpi-label">Approved Sellers</div>
+            <div class="kpi-value">{{ approved_sellers }}</div>
+          </div>
+          <div class="kpi-icon icon-green"><i class="bi bi-shop"></i></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pending Applications (CLICK) -->
+    <div class="col-md-4 kpi-wrap">
+      <a class="kpi-link" href="{{ url_for('admin.seller_applications') }}">
+        <div class="kpi kpi-accent accent-yellow p-3">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <div class="kpi-label">Pending Applications</div>
+              <div class="kpi-value">{{ pending_seller_apps }}</div>
+            </div>
+            <div class="kpi-icon icon-yellow"><i class="bi bi-hourglass-split"></i></div>
+          </div>
+        </div>
+      </a>
+    </div>
+
+    <!-- Total Products -->
+    <div class="col-md-4 kpi-wrap">
+      <div class="kpi kpi-accent accent-cyan p-3">
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <div class="kpi-label">Total Products</div>
+            <div class="kpi-value">{{ total_products }}</div>
+          </div>
+          <div class="kpi-icon icon-cyan"><i class="bi bi-basket"></i></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Accepted Sales -->
+    <div class="col-md-4 kpi-wrap">
+      <div class="kpi kpi-accent accent-purple p-3">
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <div class="kpi-label">Accepted Sales</div>
+            <div class="kpi-value">{{ accepted_sales }}</div>
+          </div>
+          <div class="kpi-icon icon-purple"><i class="bi bi-receipt"></i></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Completed Deals -->
+    <div class="col-md-4 kpi-wrap">
+      <div class="kpi kpi-accent accent-green p-3">
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <div class="kpi-label">Completed Deals</div>
+            <div class="kpi-value">{{ completed_deals }}</div>
+          </div>
+          <div class="kpi-icon icon-green"><i class="bi bi-check-circle"></i></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Total Categories (CLICK) -->
+    <div class="col-md-4 kpi-wrap">
+      <a class="kpi-link" href="{{ url_for('admin.categories') }}">
+        <div class="kpi kpi-accent accent-dark p-3">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <div class="kpi-label">Total Categories</div>
+              <div class="kpi-value">{{ total_categories }}</div>
+            </div>
+            <div class="kpi-icon icon-dark"><i class="bi bi-tags"></i></div>
+          </div>
+        </div>
+      </a>
+    </div>
+
+  </div>
+
+  <!-- Charts -->
+  <div class="row g-3">
+
+    <!-- SALES TREND -->
+    <div class="col-lg-7">
+      <div class="soft-card">
+        <div class="p-3 section-head d-flex justify-content-between align-items-center">
+          <div class="fw-bold">Sales Trend</div>
+
+          <!-- Period selector -->
+          <select id="trendDays" class="form-select form-select-sm" style="width:auto;">
+            <option value="7">Last 7 days</option>
+            <option value="14" selected>Last 14 days</option>
+            <option value="30">Last 30 days</option>
+            <option value="90">Last 90 days</option>
+          </select>
+        </div>
+
+        <div class="p-3">
+          <div style="height:280px;">
+            <canvas id="salesChart"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- USERS DONUT -->
+    <div class="col-lg-5">
+      <div class="soft-card">
+        <div class="p-3 section-head d-flex justify-content-between align-items-center">
+          <div class="fw-bold">Users</div>
+          <span class="badge badge-soft">Buyer vs Seller</span>
+        </div>
+
+        <!-- small counts -->
+        <div class="px-3 pt-3 d-flex justify-content-between align-items-center">
+          <div class="small fw-semibold text-muted">Total Users</div>
+          <div class="small">
+            <span class="me-3">
+              <span style="color:#0d6efd;">●</span> Buyers: <b id="buyersCount">0</b>
+            </span>
+            <span>
+              <span style="color:#198754;">●</span> Sellers: <b id="sellersCount">0</b>
+            </span>
+          </div>
+        </div>
+
+        <div class="p-3">
+          <div style="height:280px;">
+            <canvas id="roleChart"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+let salesChartInstance = null;
+let roleChartInstance = null;
+
+/* ✅ Theme helpers (works with your base dark/light toggle) */
+function cssVar(name, fallback=null){
+  const v = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+  return v || fallback;
+}
+function isDarkMode(){
+  return document.documentElement.getAttribute("data-bs-theme") === "dark";
+}
+function chartTheme(){
+  const text = cssVar("--bs-body-color", "#111827");
+  const grid = isDarkMode() ? "rgba(255,255,255,.10)" : "rgba(0,0,0,.08)";
+  const tooltipBg = isDarkMode() ? "rgba(15,23,42,.96)" : "rgba(17,24,39,.95)";
+  const tooltipBorder = isDarkMode() ? "rgba(255,255,255,.14)" : "rgba(255,255,255,.10)";
+  const subText = isDarkMode() ? "rgba(255,255,255,.70)" : "rgba(17,24,39,.65)";
+  return { text, grid, tooltipBg, tooltipBorder, subText };
+}
+
+// center text plugin for donut (theme-aware)
+const centerTextPlugin = {
+  id: "centerTextPlugin",
+  afterDraw(chart) {
+    const { ctx, chartArea } = chart;
+    if (!chartArea) return;
+
+    const th = chartTheme();
+    const total = (chart.data.datasets?.[0]?.data || []).reduce((a, b) => a + (Number(b) || 0), 0);
+    const x = (chartArea.left + chartArea.right) / 2;
+    const y = (chartArea.top + chartArea.bottom) / 2;
+
+    ctx.save();
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+
+    ctx.font = "700 26px system-ui, -apple-system, Segoe UI, Roboto";
+    ctx.fillStyle = th.text;
+    ctx.fillText(String(total), x, y - 6);
+
+    ctx.font = "600 12px system-ui, -apple-system, Segoe UI, Roboto";
+    ctx.fillStyle = th.subText;
+    ctx.fillText("Total Users", x, y + 18);
+
+    ctx.restore();
+  }
+};
+
+async function loadStats(days = 14) {
+  const res = await fetch(`{{ url_for('admin.stats_json') }}?days=${days}`);
+  const data = await res.json();
+  const th = chartTheme();
+
+  // ---- SALES TREND ----
+  const sales = data.sales_last_n_days;
+
+  if (salesChartInstance) salesChartInstance.destroy();
+
+  salesChartInstance = new Chart(document.getElementById("salesChart"), {
+    type: "line",
+    data: {
+      labels: sales.labels,
+      datasets: [
+        {
+          label: "Accepted",
+          data: sales.accepted,
+          borderColor: "#198754",
+          backgroundColor: "rgba(25,135,84,.12)",
+          tension: 0.35,
+          borderWidth: 3,
+          pointRadius: 3,
+          pointHoverRadius: 5,
+          fill: true
+        },
+        {
+          label: "Rejected",
+          data: sales.rejected,
+          borderColor: "#dc3545",
+          backgroundColor: "rgba(220,53,69,.10)",
+          tension: 0.35,
+          borderWidth: 3,
+          pointRadius: 3,
+          pointHoverRadius: 5,
+          fill: true
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: { mode: "index", intersect: false },
+      plugins: {
+        legend: {
+          position: "bottom",
+          labels: { usePointStyle: true, boxWidth: 10, padding: 16, color: th.text }
+        },
+        tooltip: {
+          backgroundColor: th.tooltipBg,
+          padding: 12,
+          titleColor: "#fff",
+          bodyColor: "#fff",
+          borderColor: th.tooltipBorder,
+          borderWidth: 1
+        }
+      },
+      scales: {
+        x: {
+          grid: { display: false },
+          ticks: { maxRotation: 0, color: th.text }
+        },
+        y: {
+          beginAtZero: true,
+          ticks: { precision: 0, color: th.text },
+          grid: { color: th.grid }
+        }
+      }
+    }
+  });
+
+  // ---- USERS DONUT ----
+  const labels = data.users_buyer_vs_seller.labels;
+  const values = data.users_buyer_vs_seller.data;
+
+  const buyers = values[0] || 0;
+  const sellers = values[1] || 0;
+  const total = buyers + sellers;
+
+  const buyersEl = document.getElementById("buyersCount");
+  const sellersEl = document.getElementById("sellersCount");
+  if (buyersEl) buyersEl.innerText = buyers;
+  if (sellersEl) sellersEl.innerText = sellers;
+
+  if (roleChartInstance) roleChartInstance.destroy();
+
+  roleChartInstance = new Chart(document.getElementById("roleChart"), {
+    type: "doughnut",
+    data: {
+      labels,
+      datasets: [{
+        data: values,
+        backgroundColor: ["#0d6efd", "#198754"],
+        borderWidth: 0,
+        hoverOffset: 10
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      cutout: "72%",
+      layout: { padding: 10 },
+      plugins: {
+        legend: {
+          position: "bottom",
+          labels: {
+            usePointStyle: true,
+            pointStyle: "circle",
+            boxWidth: 10,
+            padding: 16,
+            color: th.text,
+            font: { size: 12, weight: "600" }
+          }
+        },
+        tooltip: {
+          backgroundColor: th.tooltipBg,
+          padding: 12,
+          titleColor: "#fff",
+          bodyColor: "#fff",
+          borderColor: th.tooltipBorder,
+          borderWidth: 1,
+          callbacks: {
+            label: (ctx) => {
+              const v = ctx.raw || 0;
+              const pct = total ? Math.round((v / total) * 100) : 0;
+              return ` ${ctx.label}: ${v} (${pct}%)`;
+            }
+          }
+        }
+      }
+    },
+    plugins: [centerTextPlugin]
+  });
+}
+
+// initial load
+loadStats(14);
+
+// dropdown listener
+const trendDays = document.getElementById("trendDays");
+if (trendDays) {
+  trendDays.addEventListener("change", () => {
+    loadStats(parseInt(trendDays.value, 10));
+  });
+}
+
+/* ✅ Optional: if you toggle dark/light, call this to redraw charts with new colors */
+window.addEventListener("themechange", () => {
+  const days = parseInt((document.getElementById("trendDays")?.value || "14"), 10);
+  loadStats(days);
+});
+</script>
+{% endblock %}

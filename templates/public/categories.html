@@ -1,0 +1,154 @@
+{% extends "base.html" %}
+{% block content %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+<style>
+  .muted{ color: var(--text-muted); }
+
+  .category-box{
+    border-radius:12px;
+    overflow:hidden;
+    background: var(--bg-surface);
+    border:1px solid var(--border-soft);
+    height:100%;
+    transition:.15s ease;
+  }
+
+  .category-box:hover{
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-soft);
+  }
+
+  .category-img{
+    width:100%;
+    height:170px;
+    object-fit:cover;
+    background: var(--bg-soft);
+  }
+
+  .category-title{
+    padding:12px;
+    text-align:center;
+    font-weight:600;
+    font-size:1rem;
+    color: var(--text-main);
+  }
+
+  .category-link{
+    text-decoration:none;
+    color:inherit;
+    display:block;
+    height:100%;
+  }
+
+  .category-link:hover .category-title{
+    background: var(--hover-bg);
+  }
+
+  .topbar{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    gap:12px;
+    margin-bottom:16px;
+  }
+
+  .searchbox{
+    max-width:360px;
+    width:100%;
+  }
+
+  /* Search input fix for dark mode */
+  .input-group-text{
+    background: var(--bg-surface);
+    border-color: var(--border-soft);
+    color: var(--text-muted);
+  }
+
+  .form-control{
+    background: var(--bg-surface);
+    color: var(--text-main);
+    border-color: var(--border-soft);
+  }
+
+  .form-control::placeholder{
+    color: var(--text-muted);
+  }
+
+</style>
+
+<div class="container mt-4">
+
+  <div class="topbar">
+    <div>
+      <h3 class="m-0">Categories</h3>
+    </div>
+
+    <!-- Search Bar -->
+    <div class="searchbox">
+      <div class="input-group">
+        <span class="input-group-text">
+          <i class="bi bi-search"></i>
+        </span>
+        <input id="catSearch"
+               type="text"
+               class="form-control"
+               placeholder="Search category...">
+      </div>
+    </div>
+  </div>
+
+  {% if categories|length == 0 %}
+    <div class="alert alert-info">No categories yet.</div>
+  {% else %}
+    <div class="row g-3" id="catGrid">
+
+      {% for c in categories %}
+      <div class="col-6 col-md-4 col-lg-3 cat-item"
+           data-name="{{ c.name|lower }}">
+        <a class="category-link"
+           href="{{ url_for('public.feed', category_id=c.id) }}">
+          <div class="category-box">
+
+            {% if c.image_path %}
+              <img class="category-img"
+                   src="{{ url_for('static', filename=c.image_path) }}"
+                   alt="{{ c.name }}">
+            {% else %}
+              <div class="category-img d-flex align-items-center justify-content-center">
+                <i class="bi bi-image muted"
+                   style="font-size:28px;"></i>
+              </div>
+            {% endif %}
+
+            <div class="category-title">
+              {{ c.name }}
+            </div>
+
+          </div>
+        </a>
+      </div>
+      {% endfor %}
+
+    </div>
+  {% endif %}
+
+</div>
+
+<script>
+  // Simple Search Filter
+  const input = document.getElementById('catSearch');
+  const items = document.querySelectorAll('.cat-item');
+
+  if (input) {
+    input.addEventListener('input', () => {
+      const q = input.value.toLowerCase();
+      items.forEach(el => {
+        const name = el.getAttribute('data-name');
+        el.style.display = name.includes(q) ? '' : 'none';
+      });
+    });
+  }
+</script>
+
+{% endblock %}

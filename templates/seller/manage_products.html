@@ -1,0 +1,132 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container mt-4">
+
+  <style>
+    .muted{ color: var(--text-muted); }
+
+    .table-soft{
+      background: var(--bg-surface);
+      border:1px solid var(--border-soft);
+      border-radius:14px;
+      overflow:hidden;
+    }
+
+    .table{
+      color: var(--text-main);
+      margin-bottom:0;
+    }
+
+    .table thead{
+      background: var(--bg-soft);
+      border-bottom:1px solid var(--border-soft);
+    }
+
+    .table th{
+      font-size:.85rem;
+      text-transform:uppercase;
+      letter-spacing:.04em;
+      color: var(--text-muted);
+    }
+
+    .table td{
+      vertical-align:middle;
+      border-color: var(--border-soft);
+    }
+
+    .product-img{
+      width:70px;
+      height:55px;
+      object-fit:cover;
+      border-radius:10px;
+      border:1px solid var(--border-soft);
+      background: var(--bg-soft);
+    }
+
+    .table-striped tbody tr:nth-of-type(odd){
+      background-color: rgba(0,0,0,.02);
+    }
+
+  </style>
+
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h3 class="m-0">My Products</h3>
+    <a class="btn btn-primary"
+       href="{{ url_for('seller.add_product') }}">
+       + Add Product
+    </a>
+  </div>
+
+  {% if products|length == 0 %}
+    <div class="alert alert-info">
+      No products yet. Add your first product.
+    </div>
+  {% else %}
+    <div class="table-responsive table-soft">
+      <table class="table table-striped align-middle">
+
+        <thead>
+          <tr>
+            <th>Image</th>
+            <th>Title</th>
+            <th>Category</th>
+            <th>Price Per Kg</th>
+            <th>Qty</th>
+            <th style="width:220px;">Action</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          {% for p in products %}
+          <tr>
+            <td style="width:90px;">
+              {% if p.image_path %}
+                <img class="product-img"
+                     src="{{ url_for('static', filename=p.image_path) }}">
+              {% else %}
+                <span class="muted small">No image</span>
+              {% endif %}
+            </td>
+
+            <td class="fw-semibold">
+              {{ p.title }}
+            </td>
+
+            <td>
+              {{ p.category_name }}
+            </td>
+
+            <td class="fw-semibold text-primary">
+              {{ p.price }} Ks
+            </td>
+
+            <td>
+              {{ p.quantity }} kg
+            </td>
+
+            <td>
+              <a class="btn btn-sm btn-warning"
+                 href="{{ url_for('seller.edit_product', product_id=p.id) }}">
+                Edit
+              </a>
+
+              <form method="POST"
+                    action="{{ url_for('seller.delete_product', product_id=p.id) }}"
+                    style="display:inline;"
+                    onsubmit="return confirm('Delete this product?');">
+                <button class="btn btn-sm btn-danger">
+                  Delete
+                </button>
+              </form>
+            </td>
+
+          </tr>
+          {% endfor %}
+        </tbody>
+
+      </table>
+    </div>
+  {% endif %}
+
+</div>
+{% endblock %}

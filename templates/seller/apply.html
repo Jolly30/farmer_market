@@ -1,0 +1,215 @@
+{% extends "base.html" %}
+{% block content %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+<style>
+  .card-soft{
+    border-radius:16px;
+    background: var(--bs-body-bg);
+    border: 1px solid rgba(var(--bs-body-color-rgb), .12);
+    box-shadow: 0 10px 26px rgba(0,0,0,.06);
+  }
+  [data-bs-theme="dark"] .card-soft{
+    box-shadow: 0 10px 26px rgba(0,0,0,.35);
+    border-color: rgba(255,255,255,.12);
+  }
+
+  .muted{ color: var(--bs-secondary-color); }
+
+  .pill{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    padding:6px 10px;
+    border-radius:999px;
+    border:1px solid rgba(var(--bs-body-color-rgb), .14);
+    background: rgba(var(--bs-body-color-rgb), .04);
+    font-weight:800;
+    font-size:.82rem;
+    white-space:nowrap;
+  }
+
+  .kv{
+    display:grid;
+    grid-template-columns: 150px 1fr;
+    gap:8px 12px;
+    font-size:.95rem;
+  }
+  @media (max-width: 576px){
+    .kv{ grid-template-columns: 1fr; }
+  }
+
+  .btn-round{ border-radius:12px; font-weight:800; }
+
+  .form-control{
+    background: var(--bs-body-bg);
+    color: var(--bs-body-color);
+    border-color: rgba(var(--bs-body-color-rgb), .18);
+  }
+  .form-control::placeholder{ color: var(--bs-secondary-color); }
+  .form-control:focus{
+    border-color: rgba(13,110,253,.55);
+    box-shadow: 0 0 0 .2rem rgba(13,110,253,.18);
+  }
+</style>
+
+<div class="container mt-4" style="max-width:720px;">
+
+  {% set edit_mode = (request.args.get('edit') == '1') %}
+
+  <div class="d-flex align-items-start justify-content-between gap-2 mb-3">
+    <div>
+      <h3 class="m-0">Apply Seller</h3>
+      <div class="muted small mt-1">Submit your seller application for verification</div>
+    </div>
+
+   
+  </div>
+
+  {% if existing and not edit_mode %}
+
+    <!-- SUBMITTED SUMMARY -->
+    <div class="card-soft p-4">
+
+      <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
+        <div class="fw-bold">
+          <i class="bi bi-check2-circle me-1"></i> Application Submitted
+        </div>
+
+        {% if existing.status == 'pending' %}
+          <span class="pill text-dark"
+                style="background: rgba(255,193,7,.20); border-color: rgba(255,193,7,.35);">
+            <i class="bi bi-hourglass-split"></i> Pending
+          </span>
+        {% elif existing.status == 'approved' %}
+          <span class="pill"
+                style="background: rgba(25,135,84,.18); border-color: rgba(25,135,84,.35); color: var(--bs-success);">
+            <i class="bi bi-check2-circle"></i> Approved
+          </span>
+        {% elif existing.status == 'rejected' %}
+          <span class="pill"
+                style="background: rgba(220,53,69,.15); border-color: rgba(220,53,69,.35); color: var(--bs-danger);">
+            <i class="bi bi-x-circle"></i> Rejected
+          </span>
+        {% else %}
+          <span class="pill">{{ existing.status }}</span>
+        {% endif %}
+      </div>
+
+      <div class="muted small mb-3">
+        You can review your submitted details below.
+      </div>
+
+      <div class="kv">
+        <div class="muted">Full Name</div>
+        <div class="fw-semibold">{{ existing.full_name }}</div>
+
+        <div class="muted">Phone</div>
+        <div class="fw-semibold">{{ existing.phone }}</div>
+
+        <div class="muted">Farm / Shop</div>
+        <div class="fw-semibold">{{ existing.farm_name }}</div>
+
+        <div class="muted">Address</div>
+        <div class="fw-semibold">{{ existing.address }}</div>
+
+        <div class="muted">Note</div>
+        <div class="fw-semibold">{{ existing.note or '—' }}</div>
+
+        <div class="muted">Document</div>
+        <div>
+          {% if existing.document_path %}
+            <a href="{{ url_for('static', filename=existing.document_path) }}"
+               target="_blank"
+               class="fw-bold text-decoration-none">
+              <i class="bi bi-file-earmark-text me-1"></i> View
+            </a>
+          {% else %}
+            —
+          {% endif %}
+        </div>
+      </div>
+
+      <hr class="my-4" style="opacity:.15;">
+
+      <div>
+        <a class="btn btn-primary btn-round"
+           href="{{ url_for('seller.apply_seller', edit=1) }}">
+          <i class="bi bi-pencil-square me-1"></i> Edit Application
+        </a>
+      </div>
+
+    </div>
+
+  {% else %}
+
+    <!-- FORM -->
+    <form method="POST" enctype="multipart/form-data" class="card-soft p-4">
+
+      <div class="mb-3">
+        <label class="form-label fw-bold">Full Name *</label>
+        <input class="form-control"
+               name="full_name"
+               value="{{ existing.full_name if existing else '' }}"
+               required>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label fw-bold">Phone *</label>
+        <input class="form-control"
+               name="phone"
+               value="{{ existing.phone if existing else '' }}"
+               required>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label fw-bold">Address *</label>
+        <textarea class="form-control"
+                  name="address"
+                  rows="2"
+                  required>{{ existing.address if existing else '' }}</textarea>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label fw-bold">Farm / Shop Name *</label>
+        <input class="form-control"
+               name="farm_name"
+               value="{{ existing.farm_name if existing else '' }}"
+               required>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label fw-bold">Note (optional)</label>
+        <textarea class="form-control"
+                  name="note"
+                  rows="3"
+                  placeholder="Any extra details...">{{ existing.note if existing else '' }}</textarea>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label fw-bold">Upload Document (png/jpg/pdf)</label>
+        <input class="form-control"
+               type="file"
+               name="document"
+               accept=".png,.jpg,.jpeg,.pdf">
+      </div>
+
+      <div class="d-flex gap-2 flex-wrap">
+        <button class="btn btn-primary btn-round">
+          <i class="bi bi-send me-1"></i> Submit Application
+        </button>
+
+        {% if existing %}
+          <a class="btn btn-outline-secondary btn-round"
+             href="{{ url_for('seller.apply_seller') }}">
+            <i class="bi bi-arrow-left me-1"></i> Back
+          </a>
+        {% endif %}
+      </div>
+
+    </form>
+
+  {% endif %}
+
+</div>
+{% endblock %}

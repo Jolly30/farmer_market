@@ -1,0 +1,132 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+  /* Theme-safe image border */
+  .cat-img {
+    width:70px;
+    height:50px;
+    object-fit:cover;
+    border-radius:10px;
+    border: 1px solid rgba(var(--bs-body-color-rgb), .15);
+    background: rgba(var(--bs-body-color-rgb), .04);
+  }
+
+  /* Make table header theme-safe (instead of table-light) */
+  .thead-soft th{
+    background: rgba(var(--bs-body-color-rgb), .06) !important;
+    color: var(--bs-body-color) !important;
+    border-bottom: 1px solid rgba(var(--bs-body-color-rgb), .15) !important;
+  }
+
+  /* Theme-safe card border */
+  .card{
+    border: 1px solid rgba(var(--bs-body-color-rgb), .12);
+    background: var(--bs-body-bg);
+  }
+
+  /* Theme-safe table borders */
+  .table > :not(caption) > * > *{
+    border-color: rgba(var(--bs-body-color-rgb), .12);
+  }
+</style>
+
+<div class="container mt-4">
+
+  <h3 class="mb-3">Manage Categories</h3>
+
+  <!-- Add category -->
+  <div class="card mb-4 shadow-sm">
+    <div class="card-body">
+      <form method="POST" enctype="multipart/form-data" action="{{ url_for('admin.categories') }}">
+        <div class="row g-3 align-items-end">
+
+          <div class="col-md-5">
+            <label class="form-label">Category name *</label>
+            <input class="form-control" name="name" required>
+          </div>
+
+          <div class="col-md-5">
+            <label class="form-label">Category image (optional)</label>
+            <input class="form-control" type="file" name="image" accept="image/*">
+          </div>
+
+          <div class="col-md-2">
+            <button class="btn btn-primary w-100">Add</button>
+          </div>
+
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- List -->
+  {% if categories|length == 0 %}
+    <div class="alert alert-info">No categories yet.</div>
+  {% else %}
+    <div class="table-responsive">
+      <table class="table align-middle">
+        <thead class="thead-soft">
+          <tr>
+            <th style="width:90px;">Image</th>
+            <th>Name</th>
+            <th style="width:420px;">Edit</th>
+            <th class="text-end" style="width:140px;">Delete</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          {% for c in categories %}
+          <tr>
+
+            <td>
+              {% if c.image_path %}
+                <img
+                  class="cat-img"
+                  src="{{ url_for('static', filename=c.image_path) }}"
+                  alt="Category image"
+                >
+              {% else %}
+                <div class="text-muted small">No image</div>
+              {% endif %}
+            </td>
+
+            <td class="fw-semibold">{{ c.name }}</td>
+
+            <td>
+              <form method="POST" enctype="multipart/form-data"
+                    action="{{ url_for('admin.edit_category', cat_id=c.id) }}">
+                <div class="row g-2 align-items-end">
+                  <div class="col-md-5">
+                    <label class="form-label small">Name</label>
+                    <input class="form-control form-control-sm" name="name" value="{{ c.name }}" required>
+                  </div>
+
+                  <div class="col-md-5">
+                    <label class="form-label small">Replace image</label>
+                    <input class="form-control form-control-sm" type="file" name="image" accept="image/*">
+                  </div>
+
+                  <div class="col-md-2">
+                    <button class="btn btn-sm btn-outline-primary w-100">Save</button>
+                  </div>
+                </div>
+              </form>
+            </td>
+
+            <td class="text-end">
+              <form method="POST"
+                    action="{{ url_for('admin.delete_category', cat_id=c.id) }}"
+                    onsubmit="return confirm('Delete this category?');">
+                <button class="btn btn-sm btn-outline-danger">Delete</button>
+              </form>
+            </td>
+
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% endif %}
+
+</div>
+{% endblock %}

@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% block content %}
+
+<style>
+  .verify-card {
+    border: 0;
+    border-radius: 18px;
+    box-shadow: 0 10px 26px rgba(0,0,0,0.06);
+  }
+  .btn-rounded {
+    border-radius: 10px;
+    font-weight: 600;
+  }
+</style>
+
+<div class="container mt-5" style="max-width:500px;">
+  <div class="card verify-card p-4">
+
+    <h4 class="text-center mb-2">Verify Your Email</h4>
+
+    <p class="text-center text-muted small mb-4">
+      We sent a verification code to:
+      <br>
+      <strong>{{ email or session.get('signup_email') }}</strong>
+    </p>
+
+    <form method="POST" action="{{ url_for('auth.verify_email') }}">
+
+      <div class="mb-3">
+        <label class="form-label fw-bold">Enter OTP</label>
+        <input
+          type="text"
+          name="otp"
+          class="form-control text-center"
+          maxlength="6"
+          value="{{ otp or '' }}"
+          placeholder="6-digit code"
+          required
+        >
+      </div>
+
+      <button
+        type="submit"
+        name="action"
+        value="verify"
+        class="btn btn-primary w-100 btn-rounded"
+      >
+        Verify & Create Account
+      </button>
+
+      <div class="d-flex justify-content-between mt-3">
+        <button
+          type="submit"
+          name="action"
+          value="resend"
+          class="btn btn-link p-0"
+        >
+          Resend OTP
+        </button>
+
+        <a href="{{ url_for('auth.register') }}" class="btn btn-link text-danger p-0">
+          Cancel
+        </a>
+      </div>
+
+    </form>
+
+  </div>
+</div>
+
+{% endblock %}

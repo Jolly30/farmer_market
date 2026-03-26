@@ -1,0 +1,245 @@
+{% extends "base.html" %}
+{% block content %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+<style>
+  .card-soft{
+    border: 1px solid rgba(var(--bs-body-color-rgb), .10);
+    border-radius: 18px;
+    background: var(--bs-body-bg);
+  }
+  .btn-round{ border-radius:12px; font-weight:700; }
+  .muted{ color: var(--bs-secondary-color); }
+
+  .top-area{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:16px;
+    flex-wrap:wrap;
+  }
+
+  .avatar-wrap{ position:relative; width:130px; height:130px; flex:0 0 auto; }
+
+  .avatar-big{
+    width:130px; height:130px; border-radius:50%; overflow:hidden;
+    background: rgba(var(--bs-body-color-rgb), .06);
+    border: 4px solid var(--bs-body-bg);
+    box-shadow: 0 10px 25px rgba(0,0,0,.12);
+    display:flex; align-items:center; justify-content:center;
+  }
+  .avatar-big img{ width:100%; height:100%; object-fit:cover; display:block; }
+  .avatar-big i{ font-size:54px; color: var(--bs-secondary-color); }
+
+  .avatar-plus{
+    position:absolute; right:6px; bottom:6px;
+    width:36px; height:36px; border-radius:50%;
+    background: var(--bs-primary); color:#fff;
+    border: 3px solid var(--bs-body-bg);
+    display:flex; align-items:center; justify-content:center;
+    cursor:pointer;
+    box-shadow: 0 6px 14px rgba(13,110,253,.35);
+    transition: .12s ease;
+  }
+  .avatar-plus:hover{ filter:brightness(.95); transform:scale(1.02); }
+
+  .section-title{
+    font-weight:800; font-size:.95rem; margin: 0 0 10px 0;
+    color: var(--bs-body-color);
+  }
+  .divider{ height:1px; background: rgba(var(--bs-body-color-rgb), .12); margin:16px 0; }
+</style>
+
+<div class="container mt-4">
+
+  <div class="top-area mb-3">
+    <div>
+      <h3 class="m-0">Account Info</h3>
+      <div class="muted small">Edit your profile details and public info.</div>
+    </div>
+
+    <a class="btn btn-outline-primary btn-round"
+       href="{{ url_for('profile.view_user', user_id=current_user.id) }}">
+      <i class="bi bi-eye me-1"></i> View my profile
+    </a>
+  </div>
+
+  <div class="card card-soft shadow-sm">
+    <div class="card-body p-3">
+
+      <form method="POST" enctype="multipart/form-data">
+
+
+        <!-- PROFILE HEADER -->
+        <div class="d-flex gap-3 flex-wrap align-items-center">
+
+          <div class="avatar-wrap">
+            <div class="avatar-big" id="avatarBox">
+              {% if current_user.profile_image %}
+                <img id="avatarImg" src="{{ url_for('static', filename=current_user.profile_image) }}" alt="profile">
+              {% else %}
+                <i class="bi bi-person-fill" id="avatarIcon"></i>
+                <img id="avatarImg" src="" alt="profile" style="display:none;">
+              {% endif %}
+            </div>
+
+            <input type="file"
+                   name="profile_image"
+                   id="profileImageInput"
+                   accept="image/png,image/jpeg,image/webp"
+                   hidden>
+
+            <div class="avatar-plus" onclick="document.getElementById('profileImageInput').click()">
+              <i class="bi bi-plus-lg"></i>
+            </div>
+          </div>
+
+          <div style="min-width:240px;">
+            <h4 class="fw-bold m-0 text-body">
+              {{ current_user.full_name or current_user.username }}
+            </h4>
+            <div class="muted">@{{ current_user.username }}</div>
+
+            {% if current_user.tagline %}
+              <div class="mt-1 text-body">{{ current_user.tagline }}</div>
+            {% endif %}
+
+            {% if current_user.profile_image %}
+              <button type="submit"
+                      name="remove_photo"
+                      value="1"
+                      class="btn btn-sm btn-link text-danger p-0 mt-2"
+                      style="font-size:13px;">
+                Remove photo
+              </button>
+            {% endif %}
+          </div>
+
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- BASIC INFO -->
+        <div class="section-title"><i class="bi bi-person-badge me-1"></i> Basic Info</div>
+        <div class="row g-3">
+
+          <div class="col-md-6">
+            <label class="form-label">Full name</label>
+            <input class="form-control bg-body" type="text" name="full_name"
+                   value="{{ current_user.full_name or '' }}" placeholder="Your name">
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label">Phone</label>
+            <input class="form-control bg-body" type="text" name="phone"
+                   value="{{ current_user.phone or '' }}" placeholder="09xxxxxxx">
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label">City / Township (public)</label>
+            <input class="form-control bg-body" type="text" name="location_city"
+                   value="{{ current_user.location_city or '' }}" placeholder="e.g. Yangon, Hlaing">
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label">Address (private)</label>
+            <input class="form-control bg-body" type="text" name="address"
+                   value="{{ current_user.address or '' }}" placeholder="Street / Township / City">
+          </div>
+
+          <div class="col-12">
+            <label class="form-label">Bio</label>
+            <textarea class="form-control bg-body" name="bio" rows="3"
+                      placeholder="Tell something about you...">{{ current_user.bio or '' }}</textarea>
+          </div>
+
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- PROFESSIONAL -->
+        <div class="section-title"><i class="bi bi-briefcase me-1"></i> Professional</div>
+        <div class="row g-3">
+
+          <div class="col-md-6">
+            <label class="form-label">Farm / Shop name</label>
+            <input class="form-control bg-body" type="text" name="farm_name"
+                   value="{{ current_user.farm_name or '' }}" placeholder="e.g. Green Valley Farm">
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label">Tagline</label>
+            <input class="form-control bg-body" type="text" name="tagline"
+                   value="{{ current_user.tagline or '' }}" placeholder="e.g. Fresh daily • Local farmer">
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label">Business hours</label>
+            <input class="form-control bg-body" type="text" name="business_hours"
+                   value="{{ current_user.business_hours or '' }}" placeholder="Mon–Sat 8AM–5PM">
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label">WhatsApp (optional)</label>
+            <input class="form-control bg-body" type="text" name="whatsapp"
+                   value="{{ current_user.whatsapp or '' }}" placeholder="+95 ...">
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label">Facebook link</label>
+            <input class="form-control bg-body" type="text" name="facebook_link"
+                   value="{{ current_user.facebook_link or '' }}" placeholder="https://facebook.com/...">
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label">Website</label>
+            <input class="form-control bg-body" type="text" name="website_link"
+                   value="{{ current_user.website_link or '' }}" placeholder="https://...">
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label">Contact preference</label>
+            <select class="form-select bg-body" name="contact_preference">
+              {% set cp = current_user.contact_preference or '' %}
+              <option value="" {% if cp=='' %}selected{% endif %}>—</option>
+              <option value="Chat only" {% if cp=='Chat only' %}selected{% endif %}>Chat only</option>
+              <option value="Phone + Chat" {% if cp=='Phone + Chat' %}selected{% endif %}>Phone + Chat</option>
+            </select>
+          </div>
+
+        </div>
+
+        <div class="d-flex gap-2 mt-3">
+          <button class="btn btn-primary btn-round" type="submit">
+            <i class="bi bi-check2-circle me-1"></i> Save changes
+          </button>
+
+          <a class="btn btn-outline-secondary btn-round" href="{{ url_for('public.categories') }}">
+            Cancel
+          </a>
+        </div>
+
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+  const input = document.getElementById("profileImageInput");
+  const img = document.getElementById("avatarImg");
+  const icon = document.getElementById("avatarIcon");
+
+  if (input) {
+    input.addEventListener("change", () => {
+      const file = input.files && input.files[0];
+      if (!file) return;
+
+      const url = URL.createObjectURL(file);
+      img.src = url;
+      img.style.display = "block";
+      if (icon) icon.style.display = "none";
+    });
+  }
+</script>
+
+{% endblock %}

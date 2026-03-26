@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="container mt-4" style="max-width:600px;">
+  <div class="d-flex align-items-center justify-content-between mb-3">
+    <h3 class="m-0">Change Email</h3>
+    <a href="{{ url_for('security.security_home') }}" class="btn btn-outline-secondary">
+      Back
+    </a>
+  </div>
+
+  <div class="card border-0 shadow-sm bg-body">
+    <div class="card-body">
+
+      <div class="mb-3">
+        <div class="text-body-secondary small mb-1">Current Email</div>
+        <div class="fw-semibold">{{ current_user.email }}</div>
+      </div>
+
+      <hr class="border-secondary-subtle">
+
+      {% if step == 1 %}
+
+      <!-- STEP 1 -->
+      <form method="POST">
+        <input type="hidden" name="action" value="send_otp">
+
+        <div class="mb-3">
+          <label class="form-label fw-semibold">New Email</label>
+          <input
+            type="email"
+            class="form-control bg-body"
+            name="email"
+            placeholder="new@email.com"
+            required
+          >
+          <div class="form-text text-body-secondary">
+            We’ll send an OTP to this new email.
+          </div>
+        </div>
+
+        <div class="d-flex gap-2">
+          <button type="submit" class="btn btn-primary">
+            Send OTP
+          </button>
+
+          <a href="{{ url_for('security.security_home') }}" class="btn btn-outline-secondary">
+            Cancel
+          </a>
+        </div>
+      </form>
+
+      {% else %}
+
+      <!-- STEP 2 -->
+      <div class="mb-3">
+        <div class="text-body-secondary small">OTP was sent to</div>
+        <div class="fw-semibold">{{ session.get('pending_email') }}</div>
+      </div>
+
+      <!-- VERIFY FORM -->
+      <form method="POST" class="mb-3">
+        <input type="hidden" name="action" value="verify_otp">
+
+        <div class="mb-3">
+          <label class="form-label fw-semibold">Enter OTP</label>
+          <input
+            type="text"
+            class="form-control bg-body"
+            name="otp"
+            placeholder="6 digits"
+            required
+          >
+        </div>
+
+        <button type="submit" class="btn btn-success">
+          Verify &amp; Update
+        </button>
+      </form>
+
+      <div class="d-flex gap-2 flex-wrap">
+        <!-- RESEND OTP -->
+        <form method="POST" class="d-inline">
+          <input type="hidden" name="action" value="send_otp">
+          <button type="submit" class="btn btn-outline-warning">
+            Resend OTP
+          </button>
+        </form>
+
+        <!-- CANCEL -->
+        <a href="{{ url_for('security.cancel_email_change') }}" class="btn btn-outline-danger">
+          Cancel
+        </a>
+      </div>
+
+      {% endif %}
+
+    </div>
+  </div>
+</div>
+
+{% endblock %}

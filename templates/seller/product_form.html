@@ -1,0 +1,434 @@
+{# templates/seller/product_form.html #}
+{% extends "base.html" %}
+{% block content %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+<style>
+  .muted{ color: var(--text-muted); }
+
+  .card-soft{
+    border:0;
+    border-radius:16px;
+    background: var(--bg-surface);
+    box-shadow: var(--shadow-soft);
+    border:1px solid var(--border-soft);
+  }
+
+  .tag{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    padding:6px 10px;
+    border-radius:999px;
+    font-size:.82rem;
+    border:1px solid var(--border-soft);
+    background: var(--bg-surface);
+    color: var(--text-main);
+    margin:4px 6px 0 0;
+  }
+
+  /* ====== Uploader (dark/light) ====== */
+  .uploader {
+    border: 2px dashed rgba(13,110,253,.25);
+    background: rgba(13,110,253,.04);
+    border-radius: 16px;
+    padding: 14px;
+    transition: .15s ease;
+  }
+  .uploader:hover { background: rgba(13,110,253,.06); }
+  .uploader.dragover {
+    border-color: rgba(13,110,253,.55);
+    background: rgba(13,110,253,.10);
+  }
+
+  .upload-preview {
+    width: 100%;
+    height: 240px;
+    border-radius: 14px;
+    background: var(--bg-soft);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    border: 1px solid var(--border-soft);
+  }
+  .upload-preview img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: none;
+  }
+
+  .upload-meta {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 12px;
+    flex-wrap: wrap;
+  }
+
+  .file-pill {
+    font-size: .85rem;
+    padding: 6px 10px;
+    border-radius: 999px;
+    background: var(--bg-surface);
+    border: 1px solid var(--border-soft);
+    color: var(--text-main);
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .btn-soft {
+    border-radius: 12px;
+    padding: 8px 12px;
+    font-weight: 600;
+  }
+
+  /* inputs in dark/light (bootstrap keeps it mostly ok, but this makes it consistent) */
+  .form-control, .form-select, .input-group-text{
+    background: var(--bg-surface);
+    color: var(--text-main);
+    border-color: var(--border-soft);
+  }
+  .form-control::placeholder{ color: rgba(108,117,125,.9); }
+  .input-group-text{ color: var(--text-muted); }
+</style>
+
+<div class="container mt-4" style="max-width: 920px;">
+
+  <div class="d-flex align-items-start justify-content-between gap-3 mb-3">
+    <div>
+      <h3 class="m-0">
+        {% if is_edit %}Product Details{% else %}Add Product{% endif %}
+      </h3>
+    </div>
+  </div>
+
+  <div class="card card-soft">
+    <div class="card-body p-4">
+
+      <form method="POST" enctype="multipart/form-data">
+
+        <!-- ================= IMAGE UPLOAD ================= -->
+        <div class="mb-3">
+          <label class="form-label fw-semibold">Product Photo</label>
+
+          <div id="uploader" class="uploader">
+
+            <div class="upload-preview mb-2">
+              <img id="imgPreview"
+                   {% if product and product.image_path %}
+                     src="{{ url_for('static', filename=product.image_path) }}"
+                     style="display:block;"
+                   {% endif %}
+                   alt="preview">
+
+              <div id="emptyState" class="text-secondary text-center px-3"
+                   {% if product and product.image_path %}style="display:none;"{% endif %}>
+                <div style="font-size:28px;">📷</div>
+                <div class="fw-semibold">Drop image here</div>
+                <div class="small">or click “Choose Photo”</div>
+              </div>
+            </div>
+
+            <input id="productImageInput"
+                   type="file"
+                   class="d-none"
+                   name="image"
+                   accept="image/*">
+
+            <div class="upload-meta">
+              <div>
+                <span id="fileName" class="file-pill">
+                  <i class="bi bi-image"></i>
+                  {% if product and product.image_path %}
+                    Current photo set
+                  {% else %}
+                    No file chosen
+                  {% endif %}
+                </span>
+                <div class="small muted mt-1">JPG / PNG / WEBP • Recommended: 1200×800</div>
+              </div>
+
+              <div class="d-flex gap-2">
+                <button type="button" id="chooseBtn" class="btn btn-primary btn-soft">
+                  Choose Photo
+                </button>
+                <button type="button" id="removeBtn" class="btn btn-outline-secondary btn-soft">
+                  Remove
+                </button>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- ================= MAIN FIELDS ================= -->
+        <div class="row g-3">
+
+          <!-- TITLE -->
+          <div class="col-md-6">
+            <label class="form-label fw-semibold">Title *</label>
+            <input class="form-control" name="title" required
+                   value="{{ product.title if product else '' }}"
+                   placeholder="Eg. Fresh Tomato">
+          </div>
+
+          <!-- CATEGORY -->
+          <div class="col-md-6">
+            <label class="form-label fw-semibold">Category *</label>
+            <select class="form-select" name="category_id" required>
+              <option value="">-- Choose --</option>
+              {% for c in categories %}
+                <option value="{{ c.id }}"
+                  {% if product and product.category_id == c.id %}selected{% endif %}>
+                  {{ c.name }}
+                </option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <!-- PRICE -->
+          <div class="col-md-6">
+            <label class="form-label fw-semibold">Price (MMK per kg) *</label>
+            <div class="input-group">
+              <span class="input-group-text">MMK</span>
+              <input class="form-control" name="price" required
+                     value="{{ product.price if product else '' }}"
+                     placeholder="Eg. 1500">
+              <span class="input-group-text">/ kg</span>
+            </div>
+            <div class="muted small mt-1">Buyer feed will show: <b>MMK 1500 / kg</b></div>
+          </div>
+
+          <!-- QUANTITY -->
+          <div class="col-md-6">
+            <label class="form-label fw-semibold">Available Quantity (kg) *</label>
+            <div class="input-group">
+              <input class="form-control" name="quantity" required
+                     value="{{ product.quantity if product else '' }}"
+                     placeholder="Eg. 50">
+              <span class="input-group-text">kg</span>
+            </div>
+          </div>
+
+          <!-- MIN ORDER -->
+          <div class="col-md-6">
+            <label class="form-label fw-semibold">Minimum Order (kg)</label>
+            <div class="input-group">
+              <input class="form-control" name="min_order_qty"
+                     value="{{ product.min_order_qty if product else '1' }}"
+                     placeholder="Eg. 5">
+              <span class="input-group-text">kg</span>
+            </div>
+          </div>
+
+          <!-- DELIVERY ETA -->
+          <div class="col-md-6">
+            <label class="form-label fw-semibold">Delivery ETA</label>
+            <input class="form-control" name="delivery_eta"
+                   value="{{ product.delivery_eta if product else '' }}"
+                   placeholder="Eg. 1 day / 2-3 days / Same day">
+          </div>
+
+          <!-- DESCRIPTION -->
+          <div class="col-12">
+            <label class="form-label fw-semibold">Description</label>
+            <textarea class="form-control" name="description" rows="3"
+                      placeholder="Write details...">{{ product.description if product else '' }}</textarea>
+          </div>
+
+        </div>
+
+        <hr class="my-4" style="border-color: var(--border-soft);">
+
+        <!-- ================= DELIVERY METHODS ================= -->
+        <div class="mb-3">
+          <label class="form-label fw-semibold">Delivery Options</label>
+          <div class="muted small mb-2">Choose options buyer can select when requesting.</div>
+
+          {% set dm = (product.delivery_methods if product and product.delivery_methods else '') %}
+          {% set dm_list = dm.split('|') if dm else [] %}
+
+          <div class="d-flex flex-wrap gap-3">
+            {% set delivery_presets = ["Pickup", "Meet-up", "Home Delivery"] %}
+            {% for opt in delivery_presets %}
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox"
+                       name="delivery_methods" value="{{ opt }}"
+                       id="dm_{{ loop.index }}"
+                       {% if opt in dm_list %}checked{% endif %}>
+                <label class="form-check-label" for="dm_{{ loop.index }}">{{ opt }}</label>
+              </div>
+            {% endfor %}
+          </div>
+
+          <div class="mt-2">
+            <label class="form-label small muted">Other delivery (comma or | separated)</label>
+            <input class="form-control" name="delivery_other" placeholder="Eg. Express, Bus Gate"
+                   value="">
+          </div>
+        </div>
+
+        <hr class="my-4" style="border-color: var(--border-soft);">
+
+        <!-- ================= PAYMENT METHODS ================= -->
+        <div class="mb-2">
+          <label class="form-label fw-semibold">Payment Methods</label>
+          <div class="muted small">Buyer must choose from your list.</div>
+        </div>
+
+        {% set pm = (product.payment_methods if product and product.payment_methods else '') %}
+        {% set pm_list = pm.split('|') if pm else [] %}
+
+        {% set bank_selected = [] %}
+        {% set pay_selected = [] %}
+        {% set cash_selected = [] %}
+
+        {% for x in pm_list %}
+          {% if x.startswith('bank:') %}
+            {% set _ = bank_selected.append(x[5:]) %}
+          {% elif x.startswith('pay:') %}
+            {% set _ = pay_selected.append(x[4:]) %}
+          {% elif x.startswith('cash:') %}
+            {% set _ = cash_selected.append(x[5:]) %}
+          {% endif %}
+        {% endfor %}
+
+        <!-- BANK -->
+        <div class="mb-3">
+          <div class="fw-semibold mb-1"><i class="bi bi-bank me-1"></i> Bank Transfer</div>
+          <div class="d-flex flex-wrap gap-3">
+            {% set bank_presets = ["KBZ Bank", "AYA Bank", "CB Bank", "UAB Bank"] %}
+            {% for opt in bank_presets %}
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" name="bank_options"
+                       value="{{ opt }}" id="bank_{{ loop.index }}"
+                       {% if opt in bank_selected %}checked{% endif %}>
+                <label class="form-check-label" for="bank_{{ loop.index }}">{{ opt }}</label>
+              </div>
+            {% endfor %}
+          </div>
+          <div class="mt-2">
+            <label class="form-label small muted">Other banks</label>
+            <input class="form-control" name="bank_other"
+                   placeholder="Eg. Yoma Bank, AGD Bank"
+                   value="">
+          </div>
+        </div>
+
+        <!-- PAY -->
+        <div class="mb-3">
+          <div class="fw-semibold mb-1"><i class="bi bi-phone me-1"></i> Mobile Wallet</div>
+          <div class="d-flex flex-wrap gap-3">
+            {% set pay_presets = ["KBZPay", "WavePay", "AYA Pay"] %}
+            {% for opt in pay_presets %}
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" name="pay_options"
+                       value="{{ opt }}" id="pay_{{ loop.index }}"
+                       {% if opt in pay_selected %}checked{% endif %}>
+                <label class="form-check-label" for="pay_{{ loop.index }}">{{ opt }}</label>
+              </div>
+            {% endfor %}
+          </div>
+          <div class="mt-2">
+            <label class="form-label small muted">Other wallets</label>
+            <input class="form-control" name="pay_other"
+                   placeholder="Eg. MPT Money"
+                   value="">
+          </div>
+        </div>
+
+        <!-- CASH -->
+        <div class="mb-4">
+          <div class="fw-semibold mb-1"><i class="bi bi-cash-coin me-1"></i> Cash</div>
+          <div class="form-check">
+            <input class="form-check-input" type="checkbox" name="cash_options"
+                   value="Cash" id="cash_1"
+                   {% if cash_selected|length > 0 %}checked{% endif %}>
+            <label class="form-check-label" for="cash_1">Cash on delivery / pickup</label>
+          </div>
+
+          <div class="mt-2">
+            <label class="form-label small muted">Other cash notes (optional)</label>
+            <input class="form-control" name="cash_other"
+                   placeholder="Eg. Pay at pickup point"
+                   value="">
+          </div>
+        </div>
+
+        <!-- SUBMIT -->
+        <button class="btn btn-primary w-100">
+          {% if is_edit %}Save Changes{% else %}Add Product{% endif %}
+        </button>
+
+      </form>
+
+    </div>
+  </div>
+
+</div>
+
+<script>
+  const uploader = document.getElementById("uploader");
+  const input = document.getElementById("productImageInput");
+  const preview = document.getElementById("imgPreview");
+  const emptyState = document.getElementById("emptyState");
+  const fileName = document.getElementById("fileName");
+  const chooseBtn = document.getElementById("chooseBtn");
+  const removeBtn = document.getElementById("removeBtn");
+
+  function setPreview(file) {
+    if (!file) return;
+    const url = URL.createObjectURL(file);
+    preview.src = url;
+    preview.style.display = "block";
+    emptyState.style.display = "none";
+    fileName.innerHTML = `<i class="bi bi-paperclip"></i> ${file.name}`;
+  }
+
+  function clearPreview() {
+    input.value = "";
+
+    // If edit mode has existing image, keep it. Otherwise show empty.
+    const hasExisting = preview.getAttribute("src") && preview.getAttribute("src").trim() !== "";
+    if (!hasExisting) {
+      preview.style.display = "none";
+      emptyState.style.display = "block";
+      fileName.innerHTML = `<i class="bi bi-image"></i> No file chosen`;
+    } else {
+      fileName.innerHTML = `<i class="bi bi-image"></i> Current photo set`;
+    }
+  }
+
+  chooseBtn.addEventListener("click", () => input.click());
+  input.addEventListener("change", () => {
+    const f = input.files && input.files[0];
+    if (f) setPreview(f);
+  });
+  removeBtn.addEventListener("click", clearPreview);
+
+  ["dragenter","dragover"].forEach(evt => {
+    uploader.addEventListener(evt, (e) => {
+      e.preventDefault();
+      uploader.classList.add("dragover");
+    });
+  });
+  ["dragleave","drop"].forEach(evt => {
+    uploader.addEventListener(evt, (e) => {
+      e.preventDefault();
+      uploader.classList.remove("dragover");
+    });
+  });
+
+  uploader.addEventListener("drop", (e) => {
+    const f = e.dataTransfer.files && e.dataTransfer.files[0];
+    if (!f) return;
+    input.files = e.dataTransfer.files;
+    setPreview(f);
+  });
+</script>
+
+{% endblock %}

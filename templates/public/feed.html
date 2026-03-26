@@ -1,0 +1,273 @@
+{# templates/public/feed.html #}
+{% extends "base.html" %}
+{% block content %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+<style>
+  .muted{ color: var(--text-muted); }
+
+  .post-card{
+    border:1px solid var(--border-soft);
+    border-radius:16px;
+    background: var(--bg-surface);
+    box-shadow: var(--shadow-soft);
+    overflow:hidden;
+    height:100%;
+    transition:.15s ease;
+  }
+  .post-card:hover{
+    transform: translateY(-3px);
+  }
+
+  .post-img{
+    width:100%;
+    height:190px;
+    object-fit:cover;
+    background: var(--bg-soft);
+  }
+
+  .pill{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    padding:6px 10px;
+    border-radius:999px;
+    font-size:.82rem;
+    border:1px solid var(--border-soft);
+    background: var(--bg-surface);
+    color: var(--text-main);
+    margin:3px 4px 0 0;
+    white-space:nowrap;
+  }
+
+  .pill i{opacity:.85}
+  .pills-wrap{margin-top:10px}
+
+  .seller-line{display:flex;align-items:center;gap:8px}
+  .seller-avatar{
+    width:30px;height:30px;border-radius:50%;
+    object-fit:cover;
+    background: var(--bg-soft);
+    border:1px solid var(--border-soft);
+    overflow:hidden;
+  }
+
+  .btn-long{
+    width:100%;
+    border-radius:12px;
+    padding:10px 12px;
+    font-weight:600;
+  }
+
+  /* Search bar dark-mode friendly */
+  .input-group-text{
+    background: var(--bg-surface);
+    border-color: var(--border-soft);
+    color: var(--text-muted);
+  }
+  .form-control{
+    background: var(--bg-surface);
+    color: var(--text-main);
+    border-color: var(--border-soft);
+  }
+  .form-control::placeholder{ color: var(--text-muted); }
+
+</style>
+
+<div class="container mt-4">
+
+  {% if category %}
+    <div class="mb-3">
+      <h3 class="m-0">{{ category.name }} Posts</h3>
+    </div>
+
+    <!-- SEARCH BAR -->
+    <form method="GET" class="mb-3">
+      <div class="input-group">
+        <span class="input-group-text">
+          <i class="bi bi-search"></i>
+        </span>
+        <input type="text"
+               class="form-control"
+               name="q"
+               value="{{ q or '' }}"
+               placeholder="Search product name or seller username...">
+        {% if q %}
+          <a class="btn btn-outline-secondary"
+             href="{{ url_for('public.feed', category_id=category.id) }}">
+            Clear
+          </a>
+        {% endif %}
+        <button class="btn btn-primary" type="submit">Search</button>
+      </div>
+    </form>
+  {% endif %}
+
+  {% if products|length == 0 %}
+    <div class="alert alert-info">No posts in this category.</div>
+  {% else %}
+    <div class="row g-3">
+      {% for p in products %}
+        <div class="col-12 col-md-6 col-lg-4">
+          <div class="post-card">
+
+            <!-- Image -->
+            {% if p.image_path %}
+              <img class="post-img" src="{{ url_for('static', filename=p.image_path) }}" alt="{{ p.title }}">
+            {% else %}
+              <div class="post-img d-flex align-items-center justify-content-center">
+                <i class="bi bi-image muted" style="font-size:30px;"></i>
+              </div>
+            {% endif %}
+
+            <div class="p-3">
+
+              <!-- Title + Price -->
+              <div class="d-flex justify-content-between align-items-start gap-2">
+                <div class="fw-semibold" style="font-size:1.05rem; color: var(--text-main);">
+                  {{ p.title }}
+                </div>
+
+                <div class="fw-bold text-primary text-end">
+                  {{ p.price }} Ks
+                  <div class="muted fw-normal" style="font-size:.85rem; margin-top:2px;">
+                    price per kg
+                  </div>
+                </div>
+              </div>
+
+              {% if p.description %}
+                <div class="muted small mt-1">
+                  {{ p.description }}
+                </div>
+              {% endif %}
+
+              <!-- Qty + Seller -->
+              <div class="mt-2 d-flex justify-content-between align-items-center">
+                <div class="muted small">
+                  <i class="bi bi-box-seam"></i>
+                  <span class="fw-semibold" style="color: var(--text-main);">{{ p.quantity }}</span> kg available
+                </div>
+
+                <div class="seller-line muted small">
+                  {% if p.seller_photo %}
+                    <img class="seller-avatar" src="{{ url_for('static', filename=p.seller_photo) }}" alt="seller">
+                  {% else %}
+                    <div class="seller-avatar d-flex align-items-center justify-content-center">
+                      <i class="bi bi-person muted" style="font-size:14px;"></i>
+                    </div>
+                  {% endif %}
+                  <span>{{ p.seller_name }}</span>
+                </div>
+              </div>
+
+              <!-- Extra info pills -->
+              <div class="pills-wrap">
+
+                {% if p.min_order_qty %}
+                  <span class="pill">
+                    <i class="bi bi-bag-check"></i>
+                    Min: <b>{{ p.min_order_qty }}</b> kg
+                  </span>
+                {% endif %}
+
+                {% if p.delivery_eta %}
+                  <span class="pill">
+                    <i class="bi bi-clock-history"></i>
+                    ETA: <b>{{ p.delivery_eta }}</b>
+                  </span>
+                {% endif %}
+
+                {% if p.delivery_methods %}
+                  {% for d in (p.delivery_methods|string).split('|') %}
+                    {% if d.strip() %}
+                      <span class="pill">
+                        <i class="bi bi-truck"></i>
+                        {{ d.strip() }}
+                      </span>
+                    {% endif %}
+                  {% endfor %}
+                {% endif %}
+
+                {% if p.payment_methods %}
+                  {% for item in (p.payment_methods|string).split('|') %}
+                    {% set x = item.strip() %}
+                    {% if x %}
+                      {% set parts = x.split(':', 1) %}
+                      {% if parts|length == 2 %}
+                        {% set kind = parts[0] %}
+                        {% set name = parts[1] %}
+                      {% else %}
+                        {% set kind = '' %}
+                        {% set name = x %}
+                      {% endif %}
+
+                      <span class="pill">
+                        {% if kind == 'bank' %}
+                          <i class="bi bi-bank"></i>
+                        {% elif kind == 'pay' %}
+                          <i class="bi bi-phone"></i>
+                        {% elif kind == 'cash' %}
+                          <i class="bi bi-cash-coin"></i>
+                        {% else %}
+                          <i class="bi bi-credit-card"></i>
+                        {% endif %}
+                        {{ name }}
+                      </span>
+                    {% endif %}
+                  {% endfor %}
+                {% endif %}
+
+              </div>
+
+              <!-- Request button logic (UNCHANGED) -->
+              <div class="mt-3">
+
+                {% if not current_user.is_authenticated %}
+                  <a class="btn btn-outline-primary btn-long"
+                     href="{{ url_for('auth.login', next=request.path) }}">
+                    <i class="bi bi-box-arrow-in-right"></i> Login to Request
+                  </a>
+
+                {% else %}
+
+                  {% if current_user.is_admin == 1 %}
+                    <button class="btn btn-secondary btn-long" disabled>
+                      Admin (View Only)
+                    </button>
+
+                  {% elif p.seller_id == current_user.id %}
+                    <button class="btn btn-outline-secondary btn-long" disabled>
+                      <i class="bi bi-person-check"></i> Your Post
+                    </button>
+
+                  {% elif current_user.active_mode == 'seller' %}
+                    <button class="btn btn-outline-warning btn-long" disabled>
+                      Switch to Buyer mode to request
+                    </button>
+
+                  {% elif pending_product_ids and (p.id in pending_product_ids) %}
+                    <button class="btn btn-warning btn-long text-dark" disabled>
+                      <i class="bi bi-hourglass-split"></i> Pending Request
+                    </button>
+
+                  {% else %}
+                    <a class="btn btn-primary btn-long"
+                       href="{{ url_for('buyer.request_product', product_id=p.id) }}">
+                      <i class="bi bi-send"></i> Request
+                    </a>
+                  {% endif %}
+
+                {% endif %}
+
+              </div>
+
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+
+</div>
+{% endblock %}

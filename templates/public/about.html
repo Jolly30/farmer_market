@@ -1,0 +1,197 @@
+{% extends "base.html" %}
+{% block content %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+<style>
+  .about-card{
+    border-radius:20px;
+    border:1px solid var(--border-soft);
+    background: var(--bg-surface);
+    box-shadow: var(--shadow-soft);
+  }
+
+  .section-title{
+    font-weight:800;
+    margin-bottom:12px;
+    color: var(--text-main);
+  }
+
+  .muted{ color: var(--text-muted); }
+
+  .feature-box{
+    background: var(--bg-soft);
+    border:1px solid var(--border-soft);
+    border-radius:16px;
+    padding:18px;
+    height:100%;
+    transition:.15s ease;
+  }
+
+  .feature-box:hover{
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-soft);
+  }
+
+  .feature-icon{
+    width:50px;
+    height:50px;
+    border-radius:14px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:22px;
+    margin-bottom:10px;
+    background: rgba(13,110,253,.12);
+    color:#0d6efd;
+  }
+
+  .hero{
+    padding:40px 20px;
+    text-align:center;
+  }
+
+  .hero h2{
+    font-weight:800;
+  }
+
+  .highlight{
+    color:#0d6efd;
+  }
+
+</style>
+
+<div class="container mt-4">
+
+  <!-- HERO SECTION -->
+  <div class="about-card hero mb-4">
+    <h2>About <span class="highlight">Farmer Market</span></h2>
+    <p class="muted mt-3" style="max-width:750px;margin:auto;">
+      Farmer Market is a web-based platform that connects local farmers and buyers
+      directly. Our system allows users to browse agricultural products,
+      send purchase requests, communicate securely through chat,
+      and complete deals efficiently.
+    </p>
+  </div>
+
+  <!-- MISSION -->
+  <div class="about-card p-4 mb-4">
+    <h4 class="section-title"><i class="bi bi-bullseye me-2"></i>Our Mission</h4>
+    <p class="muted">
+      Our mission is to simplify agricultural trading by removing unnecessary middlemen,
+      increasing transparency, and helping local farmers reach more customers.
+      We aim to create a reliable and user-friendly digital marketplace
+      for fresh farm products.
+    </p>
+  </div>
+
+  <!-- FEATURES -->
+  <div class="about-card p-4 mb-4">
+    <h4 class="section-title"><i class="bi bi-grid-3x3-gap me-2"></i>Platform Features</h4>
+
+    <div class="row g-3 mt-2">
+
+      <div class="col-md-4">
+        <div class="feature-box">
+          <div class="feature-icon">
+            <i class="bi bi-search"></i>
+          </div>
+          <h6 class="fw-bold">Browse Products</h6>
+          <p class="muted small">
+            Buyers can explore product categories and view detailed product
+            information including price and available quantity.
+          </p>
+        </div>
+      </div>
+
+      <div class="col-md-4">
+        <div class="feature-box">
+          <div class="feature-icon">
+            <i class="bi bi-send-check"></i>
+          </div>
+          <h6 class="fw-bold">Send Requests</h6>
+          <p class="muted small">
+            Buyers can send product requests with selected quantity,
+            payment method, and delivery options.
+          </p>
+        </div>
+      </div>
+
+      <div class="col-md-4">
+        <div class="feature-box">
+          <div class="feature-icon">
+            <i class="bi bi-chat-dots"></i>
+          </div>
+          <h6 class="fw-bold">Secure Chat</h6>
+          <p class="muted small">
+            After a request is accepted, buyers and sellers can communicate
+            through a built-in chat system.
+          </p>
+        </div>
+      </div>
+
+      <div class="col-md-4">
+        <div class="feature-box">
+          <div class="feature-icon">
+            <i class="bi bi-shield-check"></i>
+          </div>
+          <h6 class="fw-bold">Seller Verification</h6>
+          <p class="muted small">
+            Farmers must apply and get approved by the administrator
+            before selling products.
+          </p>
+        </div>
+      </div>
+
+      <div class="col-md-4">
+        <div class="feature-box">
+          <div class="feature-icon">
+            <i class="bi bi-person-gear"></i>
+          </div>
+          <h6 class="fw-bold">Account Management</h6>
+          <p class="muted small">
+            Users can manage profile information, update security settings,
+            and switch between buyer and seller modes.
+          </p>
+        </div>
+      </div>
+
+      <div class="col-md-4">
+        <div class="feature-box">
+          <div class="feature-icon">
+            <i class="bi bi-bar-chart"></i>
+          </div>
+          <h6 class="fw-bold">Admin Dashboard</h6>
+          <p class="muted small">
+            The administrator monitors applications, categories,
+            product approvals, and platform statistics.
+          </p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+<!-- TECHNOLOGY -->
+<div class="about-card p-4 mb-4">
+  <h4 class="section-title">
+    <i class="bi bi-code-slash me-2"></i>Technology Stack
+  </h4>
+
+  <ul class="muted">
+    <li><b>Backend:</b> Python (Flask Framework)</li>
+    <li><b>Database:</b> SQLite </li>
+    <li><b>Frontend:</b> HTML, CSS, Bootstrap 5, JavaScript</li>
+    <li><b>Template Engine:</b> Jinja2</li>
+    <li><b>Authentication:</b> Email OTP verification & password hashing</li>
+  </ul>
+</div>
+  
+
+  <!-- FOOTER NOTE -->
+  <div class="text-center muted mb-4">
+    © {{ current_year if current_year else "2026" }} Farmer Market.
+    Built for academic and practical agricultural marketplace development.
+  </div>
+
+</div>
+
+{% endblock %}

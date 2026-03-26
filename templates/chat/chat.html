@@ -1,0 +1,438 @@
+{# templates/chat/chat.html #}
+{% extends "base.html" %}
+{% block content %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+<style>
+  .muted{ color: var(--text-muted); }
+  /* If bubble-mine is light, don't force white text */
+:root .mine .bubble{
+  color: var(--bs-body-color);
+}
+[data-bs-theme="dark"] .mine .bubble{
+  color:#fff;
+}
+  .chat-wrap{
+    display:grid;
+    grid-template-columns:340px 1fr;
+    gap:16px;
+    height: calc(100vh - 140px);
+  }
+
+  /* LEFT INFO PANEL */
+  .info-card{
+    background: var(--bg-surface);
+    border-radius:16px;
+   border:2px solid rgba(0,0,0,0.08);
+    box-shadow: var(--shadow-soft);
+    overflow:hidden;
+    display:flex;
+    flex-direction:column;
+    height: calc(100vh - 140px);
+    [data-bs-theme="dark"] .info-card{
+  border:2px solid rgba(255,255,255,0.15);}
+  }
+  .info-head{
+    padding:14px 16px;
+    border-bottom:1px solid var(--border-soft);
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+    background: var(--bg-surface);
+  }
+  .info-title{ font-weight:800; margin:0; font-size:1rem; color: var(--text-main); }
+  .info-body{ padding:14px 16px; overflow:auto; color: var(--text-main); }
+
+  .status-badge{
+    border-radius:999px;
+    padding:6px 10px;
+    font-size:.82rem;
+    font-weight:800;
+    color:#fff !important;
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    line-height:1;
+  }
+  .st-pending{ background:#ffc107; }
+  .st-accepted{ background:#198754; }
+  .st-rejected{ background:#dc3545; }
+  .st-completed{ background:#6c757d; }
+
+  .mini-row{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+    margin-bottom:12px;
+  }
+
+  .person{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding:10px;
+    border:1px solid var(--border-soft);
+    border-radius:14px;
+    background: var(--bg-surface);
+    transition: .12s ease;
+  }
+
+  .person-link{
+    color:inherit;
+    text-decoration:none;
+    width:100%;
+    border-radius:14px;
+  }
+  .person-link:hover{
+    background: var(--hover-bg);
+    border-color: transparent;
+  }
+
+  .avatar{
+    width:42px;height:42px;border-radius:50%;
+    background: var(--bg-soft);
+    border:1px solid var(--border-soft);
+    display:flex;align-items:center;justify-content:center;
+    color: var(--text-muted);
+    flex:0 0 auto;
+    overflow:hidden;
+  }
+  .avatar img{ width:100%; height:100%; object-fit:cover; display:block; }
+
+  .box{
+    background: var(--bg-soft);
+    border:1px solid var(--border-soft);
+    border-radius:12px;
+    padding:10px;
+    color: var(--text-main);
+  }
+
+  .pill{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    padding:6px 10px;
+    border-radius:999px;
+    font-size:.82rem;
+    border:1px solid var(--border-soft);
+    background: var(--bg-surface);
+    color: var(--text-main);
+    margin:4px 6px 0 0;
+    white-space:nowrap;
+  }
+
+  /* RIGHT CHAT PANEL */
+  .panel{
+    background: var(--bg-surface);
+    border-radius:16px;
+    overflow:hidden;
+    box-shadow: var(--shadow-soft);
+    border:2px solid rgba(0,0,0,0.08);
+    display:flex;
+    flex-direction:column;
+    height: calc(100vh - 140px);
+    [data-bs-theme="dark"] .panel{
+  border:2px solid rgba(255,255,255,0.15);
+}
+  }
+
+  .panel-header{
+    padding:14px 16px;
+    border-bottom:1px solid var(--border-soft);
+    color: var(--text-main);
+    font-weight:800;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:10px;
+    background: var(--bg-surface);
+  }
+
+  .panel-body{
+    flex:1;
+    overflow:auto;
+    padding:14px;
+    background: var(--bg-page);
+    color: var(--text-main);
+  }
+
+  .msg{display:flex;margin-bottom:12px;}
+  .bubble{
+    max-width:74%;
+    padding:10px 12px;
+    border-radius:14px;
+    line-height:1.35;
+    border:1px solid var(--border-soft);
+    font-size:.95rem;
+    background: var(--bg-surface);
+    color: var(--text-main);
+  }
+  .mine{justify-content:flex-end;}
+  .mine .bubble{
+    background: var(--bubble-mine);
+    color:#fff;
+    border-color: rgba(255,255,255,.14);
+  }
+  .meta{font-size:.78rem; opacity:.75; margin-bottom:6px;}
+  .img{margin-top:8px; max-width:320px; border-radius:12px; display:block;}
+
+  /* INPUT BAR */
+  .input-bar{
+    padding:12px;
+    border-top:1px solid var(--border-soft);
+    background: var(--bg-surface);
+  }
+  .input-shell{display:flex; gap:10px; align-items:center;}
+  .text-in{
+    flex:1;
+    background: var(--input-bg);
+    border:1px solid var(--input-border);
+    color: var(--text-main);
+    border-radius:12px;
+    padding:10px 12px;
+    outline:none;
+  }
+  .text-in::placeholder{ color: var(--text-muted); }
+
+  .plus-btn{
+    width:42px; height:42px; border-radius:12px;
+    background: var(--bg-surface);
+    border:1px solid var(--input-border);
+    color: var(--text-main);
+    display:flex; align-items:center; justify-content:center;
+    cursor:pointer;
+  }
+  .plus-btn:hover{ background: var(--hover-bg); }
+
+  .send-btn{
+    background:#0d6efd;
+    border:none;
+    color:#fff;
+    border-radius:12px;
+    padding:10px 16px;
+    font-weight:800;
+  }
+
+  .readonly-note{
+    padding:10px 12px;
+    background: var(--bg-soft);
+    border:1px solid var(--border-soft);
+    border-radius:12px;
+    color: var(--text-main);
+  }
+
+  .bubble.unread-highlight{
+    outline:2px solid rgba(13,110,253,.22);
+    box-shadow:0 0 0 6px rgba(13,110,253,.12);
+  }
+
+  @media (max-width: 992px){
+    .chat-wrap{ grid-template-columns:1fr; height:auto; }
+    .info-card{ height:auto; }
+    .panel{ height:70vh; }
+  }
+</style>
+
+<div class="chat-wrap">
+
+  <!-- LEFT: CHAT INFO -->
+  <div class="info-card">
+
+    <div class="info-head">
+      <div>
+        <div class="info-title"><i class="bi bi-info-circle me-1"></i> Chat Info</div>
+        <div class="muted small">Deal info (locked after accepted)</div>
+      </div>
+
+      <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('chat.my_chats') }}">
+        <i class="bi bi-arrow-left"></i>
+      </a>
+    </div>
+
+    <div class="info-body">
+
+      <!-- BUYER + SELLER -->
+      <div class="mb-3">
+
+        <a class="person person-link mb-2"
+           href="{{ url_for('profile.view_user', user_id=req.buyer_id) }}">
+          <div class="avatar">
+            {% if buyer_photo %}
+              <img src="{{ url_for('static', filename=buyer_photo) }}" alt="buyer">
+            {% else %}
+              <i class="bi bi-person-fill"></i>
+            {% endif %}
+          </div>
+          <div style="min-width:0;">
+            <b class="text-truncate d-block">{{ buyer_name }}</b>
+            <small class="muted d-block">Buyer</small>
+          </div>
+        </a>
+
+        <a class="person person-link"
+           href="{{ url_for('profile.view_user', user_id=req.seller_id) }}">
+          <div class="avatar">
+            {% if seller_photo %}
+              <img src="{{ url_for('static', filename=seller_photo) }}" alt="seller">
+            {% else %}
+              <i class="bi bi-shop"></i>
+            {% endif %}
+          </div>
+          <div style="min-width:0;">
+            <b class="text-truncate d-block">{{ seller_name }}</b>
+            <small class="muted d-block">Seller</small>
+          </div>
+        </a>
+
+      </div>
+
+      <div class="mini-row">
+        <div class="muted small">Status</div>
+        {% if req.status == 'pending' %}
+          <span class="status-badge st-pending"><i class="bi bi-hourglass-split"></i> Pending</span>
+        {% elif req.status == 'accepted' %}
+          <span class="status-badge st-accepted"><i class="bi bi-check2-circle"></i> Accepted</span>
+        {% elif req.status == 'rejected' %}
+          <span class="status-badge st-rejected"><i class="bi bi-x-circle"></i> Rejected</span>
+        {% elif req.status == 'completed' %}
+          <span class="status-badge st-completed"><i class="bi bi-lock-fill"></i> Completed</span>
+        {% else %}
+          <span class="status-badge st-completed">{{ req.status }}</span>
+        {% endif %}
+      </div>
+
+      <div class="mb-3">
+        <div class="muted small mb-2">Deal</div>
+        <div class="box small">
+          <div><b>Product:</b> {{ req.snap_title or product_title  }}</div>
+          <div class="mt-2">
+            <span class="pill"><i class="bi bi-cash-coin"></i>
+              Price:
+              <b>{% if req.snap_price %}MMK {{ req.snap_price }}{% else %}—{% endif %}</b>
+              / <b>{{ req.snap_unit or 'kg' }}</b>
+            </span>
+
+            <span class="pill"><i class="bi bi-box-seam"></i>
+              Qty: <b>{{ req.quantity }}</b> {{ req.snap_unit or 'kg' }}
+            </span>
+
+            {% if req.snap_delivery_eta %}
+              <span class="pill"><i class="bi bi-clock-history"></i>
+                ETA: <b>{{ req.snap_delivery_eta }}</b>
+              </span>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+
+      <div class="mb-3">
+        <div class="muted small mb-2">Buyer Request</div>
+        <div class="box small">
+          <div><b>Payment:</b> {{ req.payment_method or '—' }}</div>
+          <div class="mt-1"><b>Delivery:</b> {{ req.delivery_method or '—' }}</div>
+          <div class="mt-1"><b>Note:</b> {{ req.buyer_note or '—' }}</div>
+        </div>
+      </div>
+
+      <div class="mb-3">
+        <div class="muted small mb-2">Seller Comment</div>
+        <div class="box small">
+          {{ req.seller_comment or '—' }}
+        </div>
+      </div>
+
+      {% if is_readonly %}
+        <div class="alert alert-secondary mb-0">
+          <i class="bi bi-lock-fill me-1"></i>
+          This chat is <b>read-only</b> (completed).
+        </div>
+      {% endif %}
+
+    </div>
+  </div>
+
+  <!-- RIGHT: CHAT -->
+  <div class="panel">
+
+    <div class="panel-header">
+      <span># chat-{{ req.id }} • {{ req.snap_title or product_title or 'Deleted product' }}</span>
+
+      <div>
+        {% if not is_readonly %}
+          <form method="POST" action="{{ url_for('chat.mark_complete', req_id=req.id) }}" class="m-0">
+            <button class="btn btn-sm btn-success">
+              <i class="bi bi-check2-circle"></i> Mark Completed
+            </button>
+          </form>
+        {% else %}
+          <span class="badge bg-secondary text-white">
+            <i class="bi bi-check2-circle"></i> Completed
+          </span>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="panel-body" id="msgArea">
+      {% if messages|length == 0 %}
+        <div class="text-center muted">
+          No messages yet. Say hi 👋
+        </div>
+      {% endif %}
+
+      {% for m in messages %}
+        <div class="msg {% if m.sender_id == me_id %}mine{% else %}theirs{% endif %}">
+          <div class="bubble {% if last_incoming_id and m.id == last_incoming_id and m.sender_id != me_id %}unread-highlight{% endif %}">
+            <div class="meta">
+              <b>{{ m.sender_name }}</b> • {{ m.timestamp }}
+            </div>
+
+            {% if m.message %}
+              <div>{{ m.message }}</div>
+            {% endif %}
+
+            {% if m.image_path %}
+              <img class="img" src="{{ url_for('static', filename=m.image_path) }}" alt="chat image">
+            {% endif %}
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+
+    <div class="input-bar">
+      {% if is_readonly %}
+        <div class="readonly-note">This chat is closed. Read only.</div>
+      {% else %}
+        <form method="POST"
+              action="{{ url_for('chat.chat_room', req_id=req.id) }}"
+              enctype="multipart/form-data"
+              class="m-0">
+          <div class="input-shell">
+            <input type="file" id="imageInput" name="image" accept="image/*" hidden>
+
+            <div class="plus-btn" onclick="document.getElementById('imageInput').click()">
+              <i class="bi bi-plus-lg"></i>
+            </div>
+
+            <input class="text-in"
+                   type="text"
+                   name="message"
+                   placeholder="Message..."
+                   autocomplete="off">
+
+            <button class="send-btn" type="submit">Send</button>
+          </div>
+        </form>
+      {% endif %}
+    </div>
+
+  </div>
+</div>
+
+<script>
+  const box = document.getElementById("msgArea");
+  if (box) box.scrollTop = box.scrollHeight;
+</script>
+
+{% endblock %}
